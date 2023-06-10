@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:striplaravel/home/colors.dart';
 import 'package:get/get.dart';
-import 'package:striplaravel/home/strings.dart';
-
 import '../getProducts/get_products.dart';
 import '../widget/snackbar.dart';
 
@@ -14,23 +13,27 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
+  String userEmail = "";
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getEmail();
+  }
+  Future<void> getEmail() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    userEmail = prefs.getString('email11') ?? "";
+  }
+
   final CartController cartController = Get.find();
-
   int? userId;
-
   var priceToPay = "";
-
   final _number = TextEditingController();
   final _expYear = TextEditingController();
-
   final _expMonth = TextEditingController();
-
   final _cvv = TextEditingController();
-
   final _price = TextEditingController();
-
   final _description = TextEditingController();
-
   bool _isLoading = false;
 
   Future<void> buyProduct(dynamic number, String priceToPay, dynamic cvv,
@@ -50,6 +53,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
       });
       if (response.statusCode == 201) {
         print("Product purchase successfully");
+        String originalValue = priceToPay;
+        String convertedValue = (double.parse(originalValue) / 100).toStringAsFixed(2);
+        sendEmail("name", userEmail, convertedValue);
         showSnackBar(context, 'Product purchase successfully');
         setState(() {
           _isLoading = false;
@@ -63,6 +69,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         _price.clear();
         Navigator.of(context).pop();
       } else {
+
         final responseBody = json.decode(response.body);
         print("Error: ${responseBody['message']}");
         print("object");
@@ -188,6 +195,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         const SizedBox(height: 8.0),
                         ElevatedButton(
                           onPressed: () {
+
                             buyProduct(_number.text, priceToPay, _cvv.text,
                                 _expMonth.text, _expYear.text);
                             print(priceToPay);
@@ -203,21 +211,33 @@ class _PaymentScreenState extends State<PaymentScreen> {
       },
     );
   }
+  Future<void> sendEmail(String name, String email, String totalAmount) async {
+    const String apiUrl = 'http://10.0.2.2:8000/api/send-email-with-pdf';
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'name': name,
+        'email': email,
+        'totalAmount': totalAmount,
+      }),
+    );
 
+    if (response.statusCode == 200) {
+      print('Email sent successfully');
+    } else {
+      print('Failed to send email: ${response.reasonPhrase}');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors().primaryColor,
       appBar: AppBar(
-        title: const Text('Cart'),
+        title: Text('Cart',style: TextStyle(color: AppColors().greyText),),
+        centerTitle: true,
+        backgroundColor: AppColors().secondaryColor,
         actions: [
-          // GetBuilder<CartController>(
-          //   builder: (controller) {
-          //     return Padding(
-          //       padding: const EdgeInsets.only(right: 28.0),
-          //       child: Center(child: Text('Total: ${controller.totalPrice.toStringAsFixed(2)}',style: TextStyle(color: AppColors().secondaryColor, fontSize: 24),)),
-          //     );
-          //   },
-          // ),
           Padding(
             padding: const EdgeInsets.only(right: 28.0),
             child: GestureDetector(
@@ -227,6 +247,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               child: Icon(
                 Icons.paypal,
                 size: 34,
+                color: AppColors().greyText,
               ),
             ),
           )

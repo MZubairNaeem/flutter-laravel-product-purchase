@@ -8,14 +8,16 @@ import 'dart:convert';
 
 import 'package:striplaravel/auth/signupscreen.dart';
 import 'package:striplaravel/home/home.dart';
+import 'package:striplaravel/home/payment.dart';
 import 'package:striplaravel/widget/snackbar.dart';
-
 import '../home/colors.dart';
 import '../home/fogert_pass.dart';
 import '../home/strings.dart';
 import '../widget/heading_32.dart';
 import 'package:get/get.dart';
+
 class LoginScreen extends StatefulWidget {
+  
   const LoginScreen({super.key});
 
   @override
@@ -28,6 +30,7 @@ class LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool isLoading = false;
+
 
   Future<void> _login() async {
     try{

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\StripeController;
+use App\Http\Controllers\EmailController;
 
 
 /*
@@ -33,6 +34,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
     Route::post('/add/products', [ProductController::class,'store']);
     Route::get('/get/products', [ProductController::class,'index']);
+    Route::post('send-email-with-pdf', [EmailController::class,'sendEmailWithPdf']);
+
     
     Route::post('/stripe', [StripeController::class, 'stripePost']);
     Route::post('/charge', [StripeController::class, 'chargeCustomer']);
